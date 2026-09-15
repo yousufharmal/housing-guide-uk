@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Housing Guide UK — UK Student Accommodation Guide</title>
+  <meta
+    name="description"
+    content="Real student experiences and reviews to help UK university students find and understand student accommodation."
+  />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <!-- ===================== HEADER ===================== -->
+  <header class="site-header">
+    <div class="container">
+      <a href="#home" class="brand">
+        <span class="brand-mark">HG</span>
+        <span class="brand-text">
+          Housing Guide UK
+          <span class="brand-sub">UK Student Accommodation Guide</span>
+        </span>
+      </a>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+        &#9776;
+      </button>
+
+      <nav class="main-nav" id="mainNav">
+        <a href="#home">Home</a>
+        <a href="#cities">Cities</a>
+        <a href="#reviews">Reviews</a>
+        <a href="#submit">Share Your Experience</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ===================== HERO ===================== -->
+  <section class="hero" id="home">
+    <div class="container">
+      <span class="hero-eyebrow">Real Student Experiences &bull; By Students, For Students</span>
+      <h1>Find student accommodation with <span>confidence, not guesswork</span></h1>
+      <p class="hero-lead">
+        Housing Guide UK collects honest, first-hand reviews from real UK students so you
+        can compare accommodation, costs and landlords before you sign a tenancy agreement
+        — not after.
+      </p>
+      <div class="hero-actions">
+        <a href="#reviews" class="btn btn-gold">Explore Student Experiences</a>
+        <a href="#submit" class="btn btn-secondary">Share Your Experience</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <strong id="statCities">—</strong>
+          <span>UK cities covered</span>
+        </div>
+        <div class="hero-stat">
+          <strong id="statReviews">—</strong>
+          <span>Student reviews</span>
+        </div>
+        <div class="hero-stat">
+          <strong>100%</strong>
+          <span>Written by students</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== CITIES ===================== -->
+  <section class="section" id="cities">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">Browse by city</span>
+        <h2>Student accommodation across the UK</h2>
+        <p>Pick a city to see what students who actually lived there have to say.</p>
+      </div>
+      <div class="city-grid" id="cityGrid">
+        <div class="skeleton" style="aspect-ratio:4/5;"></div>
+        <div class="skeleton" style="aspect-ratio:4/5;"></div>
+        <div class="skeleton" style="aspect-ratio:4/5;"></div>
+        <div class="skeleton" style="aspect-ratio:4/5;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== REVIEWS ===================== -->
+  <section class="section section-alt" id="reviews">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">Student reviews</span>
+        <h2>Approved reviews from real students</h2>
+        <p>Every review here has been checked by our team before publishing.</p>
+      </div>
+
+      <div class="reviews-toolbar">
+        <div class="reviews-filters">
+          <select id="filterCity">
+            <option value="">All cities</option>
+          </select>
+          <select id="filterSort">
+            <option value="newest">Newest first</option>
+            <option value="rating_high">Highest rated</option>
+            <option value="rating_low">Lowest rated</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="review-grid" id="reviewGrid">
+        <div class="skeleton" style="height:280px;"></div>
+        <div class="skeleton" style="height:280px;"></div>
+      </div>
+
+      <div class="load-more-wrap">
+        <button class="btn btn-outline" id="loadMoreBtn" type="button">Load more reviews</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SUBMIT REVIEW ===================== -->
+  <section class="section" id="submit">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">Share your experience</span>
+        <h2>Tell future students what it's really like</h2>
+        <p>
+          Your review is checked by our team before it goes live, usually within a couple
+          of days. Your contact details are never shown publicly.
+        </p>
+      </div>
+      <div id="reviewFormMount"></div>
+    </div>
+  </section>
+
+  <!-- ===================== CONTACT ===================== -->
+  <section class="section section-alt" id="contact">
+    <div class="container">
+      <div class="contact-card">
+        <h2>Questions or feedback?</h2>
+        <p>We'd love to hear from you — whether it's a correction, a suggestion, or press enquiry.</p>
+        <p><a id="contactEmailLink" href="mailto:hello@housingguideuk.example">hello@housingguideuk.example</a></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== LIGHTBOX ===================== -->
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightboxClose" aria-label="Close">&times;</button>
+    <img id="lightboxImg" src="" alt="Enlarged review photo" />
+  </div>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="site-footer">
+    <div class="container">
+      <p><strong>Housing Guide UK</strong> — UK Student Accommodation Guide</p>
+      <p>Built by students, for students. Development preview.</p>
+    </div>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script type="module" src="js/app.js"></script>
+  <script type="module" src="js/reviews.js"></script>
+</body>
+</html>

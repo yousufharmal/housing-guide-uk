@@ -1,0 +1,22 @@
+# Environment / secrets
+# js/config.js holds your real Supabase URL + anon key and must never be committed.
+# Copy js/config.example.js to js/config.js and fill in your own values.
+js/config.js
+.env
+.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor folders
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# In case any tooling is added later
+node_modules/
+dist/
