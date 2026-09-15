@@ -177,18 +177,30 @@ async function loadReviews({ reset = false } = {}) {
 
 // Approved-review photos are private-bucket objects, so the only way to
 // display them is a signed URL. One batched request per page of reviews,
-// rather than one request per photo.
+// rather than one request per photo. A photo_path that's already a full
+// URL (used by database/seed.sql, which can't upload real files into
+// Storage) is used as-is instead of being signed.
 async function getSignedPhotoUrls(reviews) {
-  const paths = reviews.flatMap((r) => (r.review_photos || []).map((p) => p.photo_path));
-  if (paths.length === 0) return {};
+  const allPaths = reviews.flatMap((r) => (r.review_photos || []).map((p) => p.photo_path));
+  const map = {};
+  const storagePaths = [];
 
-  const { data, error } = await supabase.storage.from(REVIEW_PHOTOS_BUCKET).createSignedUrls(paths, 3600);
+  allPaths.forEach((path) => {
+    if (/^https?:\/\//.test(path)) {
+      map[path] = path;
+    } else {
+      storagePaths.push(path);
+    }
+  });
+
+  if (storagePaths.length === 0) return map;
+
+  const { data, error } = await supabase.storage.from(REVIEW_PHOTOS_BUCKET).createSignedUrls(storagePaths, 3600);
   if (error || !data) {
     console.error("Could not sign review photo URLs:", error?.message);
-    return {};
+    return map;
   }
 
-  const map = {};
   data.forEach((entry) => {
     if (entry.signedUrl) map[entry.path] = entry.signedUrl;
   });

@@ -196,18 +196,30 @@ function adminReviewCardTemplate(review, status, photoUrlByPath) {
 
 // Admins can view photos for reviews of any status (pending, approved,
 // deleted) since is_admin() bypasses the storage RLS check — signing the
-// URL is what actually proves that access, via the admin's session.
+// URL is what actually proves that access, via the admin's session. A
+// photo_path that's already a full URL (from database/seed.sql, which
+// can't upload real files into Storage) is used as-is.
 async function getSignedPhotoUrlsAdmin(reviews) {
-  const paths = reviews.flatMap((r) => (r.review_photos || []).map((p) => p.photo_path));
-  if (paths.length === 0) return {};
+  const allPaths = reviews.flatMap((r) => (r.review_photos || []).map((p) => p.photo_path));
+  const map = {};
+  const storagePaths = [];
 
-  const { data, error } = await supabase.storage.from(REVIEW_PHOTOS_BUCKET).createSignedUrls(paths, 3600);
+  allPaths.forEach((path) => {
+    if (/^https?:\/\//.test(path)) {
+      map[path] = path;
+    } else {
+      storagePaths.push(path);
+    }
+  });
+
+  if (storagePaths.length === 0) return map;
+
+  const { data, error } = await supabase.storage.from(REVIEW_PHOTOS_BUCKET).createSignedUrls(storagePaths, 3600);
   if (error || !data) {
     console.error("Could not sign review photo URLs:", error?.message);
-    return {};
+    return map;
   }
 
-  const map = {};
   data.forEach((entry) => {
     if (entry.signedUrl) map[entry.path] = entry.signedUrl;
   });

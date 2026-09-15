@@ -20,7 +20,7 @@ accommodation through real student experiences and reviews.
 - [x] City management
 - [x] Review photo uploads
 - [x] Photo moderation
-- [ ] Seed data + admin test account
+- [x] Seed data + admin test account
 - [ ] Full documentation
 
 ## Project structure
