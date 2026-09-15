@@ -16,7 +16,7 @@ accommodation through real student experiences and reviews.
 - [x] Database schema
 - [x] Public website (cities + review browsing)
 - [x] Review submission form
-- [ ] Admin dashboard
+- [x] Admin dashboard
 - [ ] City management
 - [ ] Review photo uploads
 - [ ] Photo moderation

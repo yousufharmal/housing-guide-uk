@@ -8,7 +8,185 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <p style="padding:40px;font-family:sans-serif;">Admin dashboard — coming soon.</p>
+  <!-- ===================== LOGIN ===================== -->
+  <div class="admin-login-wrap" id="loginWrap">
+    <div class="admin-login-card">
+      <h1>Housing Guide UK</h1>
+      <p class="subtitle">Admin dashboard sign in</p>
+
+      <div class="login-error" id="loginError"></div>
+
+      <form id="loginForm">
+        <div class="form-field">
+          <label for="loginEmail">Email</label>
+          <input type="email" id="loginEmail" required autocomplete="username" />
+        </div>
+        <div class="form-field">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" required autocomplete="current-password" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="loginBtn">Log in</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================== DASHBOARD ===================== -->
+  <div class="admin-shell" id="adminShell">
+    <div class="admin-topbar">
+      <a href="admin.html" class="brand">
+        <span class="brand-mark">HG</span>
+        <span class="brand-text">
+          Housing Guide UK
+          <span class="brand-sub">Admin Dashboard</span>
+        </span>
+      </a>
+      <div class="admin-topbar-right">
+        <span id="adminEmailLabel"></span>
+        <button class="btn btn-sm btn-secondary" id="logoutBtn" type="button">Log out</button>
+      </div>
+    </div>
+
+    <nav class="admin-tabs">
+      <button class="admin-tab active" data-tab="pending" type="button">
+        New Submissions <span class="count-badge" id="pendingCount">0</span>
+      </button>
+      <button class="admin-tab" data-tab="approved" type="button">Approved Reviews</button>
+      <button class="admin-tab" data-tab="deleted" type="button">Deleted Reviews</button>
+      <button class="admin-tab" data-tab="form" type="button">Form Management</button>
+      <button class="admin-tab" data-tab="cities" type="button">City Management</button>
+      <button class="admin-tab" data-tab="settings" type="button">Website Management</button>
+    </nav>
+
+    <!-- New Submissions -->
+    <section class="admin-panel active" data-panel="pending">
+      <div class="admin-panel-header">
+        <h2>New submissions</h2>
+      </div>
+      <div class="admin-review-list" id="pendingList">
+        <div class="skeleton" style="height:120px;"></div>
+      </div>
+    </section>
+
+    <!-- Approved Reviews -->
+    <section class="admin-panel" data-panel="approved">
+      <div class="admin-panel-header">
+        <h2>Approved reviews</h2>
+      </div>
+      <div class="admin-review-list" id="approvedList">
+        <div class="skeleton" style="height:120px;"></div>
+      </div>
+    </section>
+
+    <!-- Deleted Reviews -->
+    <section class="admin-panel" data-panel="deleted">
+      <div class="admin-panel-header">
+        <h2>Deleted / rejected reviews</h2>
+      </div>
+      <div class="admin-review-list" id="deletedList">
+        <div class="skeleton" style="height:120px;"></div>
+      </div>
+    </section>
+
+    <!-- Form Management -->
+    <section class="admin-panel" data-panel="form">
+      <div class="admin-panel-header">
+        <h2>Review form questions</h2>
+      </div>
+
+      <div class="admin-card" style="margin-bottom:24px;">
+        <h3 style="margin-bottom:16px;">Add a question</h3>
+        <form id="formFieldForm">
+          <div class="admin-form-grid">
+            <div class="form-field" style="margin-bottom:0;">
+              <label for="ff_field_key">Field key</label>
+              <input type="text" id="ff_field_key" required placeholder="e.g. facilities" />
+            </div>
+            <div class="form-field" style="margin-bottom:0;">
+              <label for="ff_label">Label</label>
+              <input type="text" id="ff_label" required placeholder="e.g. Facilities" />
+            </div>
+            <div class="form-field" style="margin-bottom:0;">
+              <label for="ff_step">Step</label>
+              <select id="ff_step">
+                <option value="1">1 — Accommodation</option>
+                <option value="2">2 — Your Experience</option>
+                <option value="3">3 — Review &amp; Contact</option>
+              </select>
+            </div>
+            <div class="form-field" style="margin-bottom:0;">
+              <label for="ff_order">Display order</label>
+              <input type="number" id="ff_order" value="0" />
+            </div>
+            <label class="pill-toggle"><input type="checkbox" id="ff_required" style="width:auto;" /> Required</label>
+            <label class="pill-toggle"><input type="checkbox" id="ff_enabled" style="width:auto;" checked /> Enabled</label>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm">Add question</button>
+        </form>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table class="admin-table" id="formFieldsTable">
+          <thead>
+            <tr>
+              <th>Field key</th>
+              <th>Label</th>
+              <th>Step</th>
+              <th>Required</th>
+              <th>Enabled</th>
+              <th>Order</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="formFieldsTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- City Management -->
+    <section class="admin-panel" data-panel="cities">
+      <div class="admin-panel-header">
+        <h2>Cities</h2>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="admin-table" id="citiesTable">
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Name</th>
+              <th>Enabled</th>
+              <th>Order</th>
+            </tr>
+          </thead>
+          <tbody id="citiesTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Website Management -->
+    <section class="admin-panel" data-panel="settings">
+      <div class="admin-panel-header">
+        <h2>Website settings</h2>
+      </div>
+      <div class="admin-card" style="max-width:560px;">
+        <form id="siteSettingsForm">
+          <div class="form-field">
+            <label for="setting_hero_title">Hero title</label>
+            <input type="text" id="setting_hero_title" maxlength="200" />
+          </div>
+          <div class="form-field">
+            <label for="setting_hero_subtitle">Hero subtitle</label>
+            <textarea id="setting_hero_subtitle" maxlength="400"></textarea>
+          </div>
+          <div class="form-field">
+            <label for="setting_contact_email">Contact email</label>
+            <input type="email" id="setting_contact_email" maxlength="200" />
+          </div>
+          <button type="submit" class="btn btn-primary">Save settings</button>
+          <span class="form-message" id="settingsMessage" style="margin-top:12px;"></span>
+        </form>
+      </div>
+    </section>
+  </div>
 
   <script src="js/config.js"></script>
   <script type="module" src="js/admin.js"></script>
