@@ -192,7 +192,7 @@ create table if not exists public.form_fields (
   id uuid primary key default gen_random_uuid(),
   field_key text not null unique,
   label text not null,
-  step integer not null check (step between 1 and 4),
+  step integer not null check (step between 1 and 3), -- the review form has 3 steps
   required boolean not null default false,
   enabled boolean not null default true,
   display_order integer not null default 0,

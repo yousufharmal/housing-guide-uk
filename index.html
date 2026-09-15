@@ -128,7 +128,281 @@
           of days. Your contact details are never shown publicly.
         </p>
       </div>
-      <div id="reviewFormMount"></div>
+      <div class="form-card">
+        <div class="form-message" id="formMessage"></div>
+
+        <div class="form-steps">
+          <div class="form-step-indicator active" data-step-indicator="1">1. Accommodation</div>
+          <div class="form-step-indicator" data-step-indicator="2">2. Your Experience</div>
+          <div class="form-step-indicator" data-step-indicator="3">3. Review &amp; Contact</div>
+        </div>
+
+        <form id="submitReviewForm" novalidate>
+          <!-- ============ STEP 1: Accommodation + Costs ============ -->
+          <div class="form-step active" data-step="1">
+            <div class="form-row">
+              <div class="form-field" data-field="city_id">
+                <label for="field_city"><span class="label-text">City</span><span class="required-mark"> *</span></label>
+                <select id="field_city" name="city_id" required>
+                  <option value="">Select a city…</option>
+                </select>
+                <div class="field-error">Please select a city.</div>
+              </div>
+              <div class="form-field" data-field="accommodation_name">
+                <label for="field_accommodation_name"><span class="label-text">Accommodation name</span><span class="required-mark"> *</span></label>
+                <input type="text" id="field_accommodation_name" name="accommodation_name" required maxlength="150" />
+                <div class="field-error">Please enter the accommodation name.</div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-field" data-field="location">
+                <label for="field_location"><span class="label-text">Location</span><span class="required-mark hidden"> *</span></label>
+                <input type="text" id="field_location" name="location" maxlength="150" placeholder="Street / area" />
+                <div class="field-error">Please enter a location.</div>
+              </div>
+              <div class="form-field" data-field="housing_type">
+                <label for="field_housing_type"><span class="label-text">Housing type</span><span class="required-mark"> *</span></label>
+                <select id="field_housing_type" name="housing_type" required>
+                  <option value="">Select…</option>
+                  <option value="studio">Studio</option>
+                  <option value="shared_house">Shared house</option>
+                  <option value="shared_flat">Shared flat</option>
+                  <option value="halls">Halls of residence</option>
+                  <option value="private_flat">Private flat</option>
+                  <option value="other">Other</option>
+                </select>
+                <div class="field-error">Please select a housing type.</div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-field" data-field="bedrooms" id="bedroomsField">
+                <label for="field_bedrooms"><span class="label-text">Number of bedrooms</span><span class="required-mark hidden"> *</span></label>
+                <input type="number" id="field_bedrooms" name="bedrooms" min="0" max="20" step="1" />
+                <div class="field-error">Please enter the number of bedrooms.</div>
+              </div>
+              <div class="form-field" data-field="rent">
+                <label for="field_rent"><span class="label-text">Rent</span><span class="required-mark"> *</span></label>
+                <input type="number" id="field_rent" name="rent" min="0" step="0.01" required />
+                <div class="field-error">Please enter the rent amount.</div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-field" data-field="rent_period">
+                <label for="field_rent_period"><span class="label-text">Rent period</span><span class="required-mark"> *</span></label>
+                <select id="field_rent_period" name="rent_period" required>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly" selected>Monthly</option>
+                  <option value="yearly">Yearly</option>
+                </select>
+              </div>
+              <div class="form-field" data-field="bills">
+                <label for="field_bills"><span class="label-text">Average bills</span><span class="required-mark hidden"> *</span> <span class="hint">per month</span></label>
+                <input type="number" id="field_bills" name="bills" min="0" step="0.01" />
+                <label style="margin-top:10px; font-weight:400; display:flex; gap:8px; align-items:center;">
+                  <input type="checkbox" id="field_bills_included" style="width:auto;" />
+                  All bills included in rent
+                </label>
+                <div class="field-error">Please enter an average bills amount, or tick "all bills included".</div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <span class="spacer"></span>
+              <button type="button" class="btn btn-primary" data-next>Continue</button>
+            </div>
+          </div>
+
+          <!-- ============ STEP 2: Experience ============ -->
+          <div class="form-step" data-step="2">
+            <div class="form-row">
+              <div class="form-field" data-field="furnishing">
+                <label><span class="label-text">Furnishing</span><span class="required-mark hidden"> *</span></label>
+                <div class="rating-scale" data-rating="furnishing">
+                  <button type="button" data-value="1">1</button>
+                  <button type="button" data-value="2">2</button>
+                  <button type="button" data-value="3">3</button>
+                  <button type="button" data-value="4">4</button>
+                  <button type="button" data-value="5">5</button>
+                </div>
+                <div class="field-error">Please rate furnishing.</div>
+              </div>
+              <div class="form-field" data-field="facilities">
+                <label><span class="label-text">Facilities</span><span class="required-mark hidden"> *</span></label>
+                <div class="rating-scale" data-rating="facilities">
+                  <button type="button" data-value="1">1</button>
+                  <button type="button" data-value="2">2</button>
+                  <button type="button" data-value="3">3</button>
+                  <button type="button" data-value="4">4</button>
+                  <button type="button" data-value="5">5</button>
+                </div>
+                <div class="field-error">Please rate facilities.</div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-field" data-field="sound">
+                <label><span class="label-text">Sound insulation</span><span class="required-mark hidden"> *</span></label>
+                <div class="rating-scale" data-rating="sound">
+                  <button type="button" data-value="1">1</button>
+                  <button type="button" data-value="2">2</button>
+                  <button type="button" data-value="3">3</button>
+                  <button type="button" data-value="4">4</button>
+                  <button type="button" data-value="5">5</button>
+                </div>
+                <div class="field-error">Please rate sound insulation.</div>
+              </div>
+              <div class="form-field" data-field="management">
+                <label><span class="label-text">Management</span><span class="required-mark hidden"> *</span></label>
+                <div class="rating-scale" data-rating="management">
+                  <button type="button" data-value="1">1</button>
+                  <button type="button" data-value="2">2</button>
+                  <button type="button" data-value="3">3</button>
+                  <button type="button" data-value="4">4</button>
+                  <button type="button" data-value="5">5</button>
+                </div>
+                <div class="field-error">Please rate management.</div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-field" data-field="maintenance">
+                <label><span class="label-text">Maintenance</span><span class="required-mark hidden"> *</span></label>
+                <div class="rating-scale" data-rating="maintenance">
+                  <button type="button" data-value="1">1</button>
+                  <button type="button" data-value="2">2</button>
+                  <button type="button" data-value="3">3</button>
+                  <button type="button" data-value="4">4</button>
+                  <button type="button" data-value="5">5</button>
+                </div>
+                <div class="field-error">Please rate maintenance.</div>
+              </div>
+              <div class="form-field" data-field="area_location_services">
+                <label><span class="label-text">Area, location &amp; services</span><span class="required-mark hidden"> *</span></label>
+                <div class="rating-scale" data-rating="area_location_services">
+                  <button type="button" data-value="1">1</button>
+                  <button type="button" data-value="2">2</button>
+                  <button type="button" data-value="3">3</button>
+                  <button type="button" data-value="4">4</button>
+                  <button type="button" data-value="5">5</button>
+                </div>
+                <div class="field-error">Please rate the area.</div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-field" data-field="internet">
+                <label><span class="label-text">Internet</span><span class="required-mark hidden"> *</span></label>
+                <div class="rating-scale" data-rating="internet">
+                  <button type="button" data-value="1">1</button>
+                  <button type="button" data-value="2">2</button>
+                  <button type="button" data-value="3">3</button>
+                  <button type="button" data-value="4">4</button>
+                  <button type="button" data-value="5">5</button>
+                </div>
+                <div class="field-error">Please rate the internet.</div>
+              </div>
+              <div class="form-field" data-field="recommendation">
+                <label><span class="label-text">Would you recommend it?</span><span class="required-mark hidden"> *</span></label>
+                <div class="rating-scale" data-recommendation>
+                  <button type="button" data-value="true" style="width:auto;padding:0 16px;border-radius:var(--radius-sm);">Yes</button>
+                  <button type="button" data-value="false" style="width:auto;padding:0 16px;border-radius:var(--radius-sm);">No</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-field" data-field="overall_rating">
+              <label><span class="label-text">Overall rating</span><span class="required-mark"> *</span></label>
+              <div class="overall-stars" id="overallStars">
+                <span class="star" data-value="1">&#9733;</span>
+                <span class="star" data-value="2">&#9733;</span>
+                <span class="star" data-value="3">&#9733;</span>
+                <span class="star" data-value="4">&#9733;</span>
+                <span class="star" data-value="5">&#9733;</span>
+              </div>
+              <div class="field-error">Please give an overall rating.</div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-outline" data-prev>Back</button>
+              <span class="spacer"></span>
+              <button type="button" class="btn btn-primary" data-next>Continue</button>
+            </div>
+          </div>
+
+          <!-- ============ STEP 3: Written review + Contact + Photos ============ -->
+          <div class="form-step" data-step="3">
+            <div class="form-field" data-field="pros">
+              <label for="field_pros"><span class="label-text">Pros</span><span class="required-mark hidden"> *</span></label>
+              <textarea id="field_pros" name="pros" maxlength="1000" placeholder="What was good about living here?"></textarea>
+              <div class="field-error">Please share some pros.</div>
+            </div>
+            <div class="form-field" data-field="cons">
+              <label for="field_cons"><span class="label-text">Cons</span><span class="required-mark hidden"> *</span></label>
+              <textarea id="field_cons" name="cons" maxlength="1000" placeholder="What could be better?"></textarea>
+              <div class="field-error">Please share some cons.</div>
+            </div>
+            <div class="form-field" data-field="advice">
+              <label for="field_advice"><span class="label-text">Advice for future students</span><span class="required-mark hidden"> *</span></label>
+              <textarea id="field_advice" name="advice" maxlength="1000"></textarea>
+              <div class="field-error">Please share some advice.</div>
+            </div>
+            <div class="form-field" data-field="student_type">
+              <label for="field_student_type"><span class="label-text">Student type</span><span class="required-mark hidden"> *</span></label>
+              <select id="field_student_type" name="student_type">
+                <option value="">Prefer not to say</option>
+                <option value="undergraduate">Undergraduate</option>
+                <option value="postgraduate">Postgraduate</option>
+                <option value="international">International</option>
+                <option value="exchange">Exchange</option>
+                <option value="other">Other</option>
+              </select>
+              <div class="field-error">Please select a student type.</div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-field">
+                <label for="field_name">Your name <span class="required-mark"> *</span></label>
+                <input type="text" id="field_name" name="name" required maxlength="120" />
+                <div class="field-error">Please enter your name.</div>
+              </div>
+              <div class="form-field">
+                <label for="field_email">Your email <span class="required-mark"> *</span> <span class="hint">(never shown publicly)</span></label>
+                <input type="email" id="field_email" name="email" required maxlength="200" />
+                <div class="field-error">Please enter a valid email address.</div>
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label><span class="label-text">Photos</span> <span class="hint">optional, up to 5 — JPG, PNG or WEBP, 5MB max each</span></label>
+              <div class="photo-dropzone" id="photoDropzone">
+                <input type="file" id="photoInput" accept="image/jpeg,image/png,image/webp" multiple hidden />
+                <p style="margin:0;">Click to select photos, or drag and drop</p>
+              </div>
+              <div class="photo-preview-grid" id="photoPreviewGrid"></div>
+              <div class="field-error" id="photoError" style="display:block;"></div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-outline" data-prev>Back</button>
+              <span class="spacer"></span>
+              <button type="submit" class="btn btn-primary" id="submitReviewBtn">Submit review</button>
+            </div>
+          </div>
+        </form>
+
+        <div class="form-success-panel hidden" id="formSuccessPanel">
+          <div class="icon">&#9989;</div>
+          <h3>Thank you — your review has been submitted!</h3>
+          <p>
+            Our team checks every review before it goes live, usually within a couple of
+            days. Your contact details are kept private and are never shown publicly.
+          </p>
+          <button class="btn btn-outline" id="submitAnotherBtn" type="button">Submit another review</button>
+        </div>
+      </div>
     </div>
   </section>
 

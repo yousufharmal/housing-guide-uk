@@ -15,7 +15,7 @@ accommodation through real student experiences and reviews.
 - [x] Project scaffolding
 - [x] Database schema
 - [x] Public website (cities + review browsing)
-- [ ] Review submission form
+- [x] Review submission form
 - [ ] Admin dashboard
 - [ ] City management
 - [ ] Review photo uploads
