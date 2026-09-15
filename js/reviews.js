@@ -1,9 +1,9 @@
 // js/reviews.js
 //
-// Public review browsing. The 3-step review submission form is added to
-// this file in a later commit.
+// Public review browsing and the 3-step review submission form, including
+// photo uploads to Supabase Storage.
 
-import { supabase } from "./supabase.js";
+import { supabase, REVIEW_PHOTOS_BUCKET } from "./supabase.js";
 
 const PAGE_SIZE = 6;
 
@@ -406,6 +406,32 @@ if (form) {
     photoDropzone.classList.toggle("hidden", selectedPhotos.length >= MAX_PHOTOS);
   }
 
+  // ---------- Upload photos to Storage (runs after the review row exists) ----------
+  // Object paths are "<review_id>/<filename>" — the storage RLS policies in
+  // database/policies.sql read the review id straight out of that path to
+  // decide whether the upload/view is allowed.
+  async function uploadReviewPhotos(reviewId, photos) {
+    for (let index = 0; index < photos.length; index++) {
+      const file = photos[index].file;
+      const extension = (file.name.split(".").pop() || "jpg").toLowerCase();
+      const path = `${reviewId}/${Date.now()}-${index}.${extension}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from(REVIEW_PHOTOS_BUCKET)
+        .upload(path, file, { contentType: file.type });
+
+      if (uploadError) throw uploadError;
+
+      const { error: insertError } = await supabase.from("review_photos").insert({
+        review_id: reviewId,
+        photo_path: path,
+        display_order: index,
+      });
+
+      if (insertError) throw insertError;
+    }
+  }
+
   // ---------- Validation ----------
   function fieldIsVisible(wrapper) {
     return !wrapper.classList.contains("hidden") && wrapper.offsetParent !== null;
@@ -566,8 +592,8 @@ if (form) {
 
       if (contactError) throw contactError;
 
-      if (selectedPhotos.length > 0 && typeof window.uploadReviewPhotos === "function") {
-        await window.uploadReviewPhotos(insertedReview.id, selectedPhotos);
+      if (selectedPhotos.length > 0) {
+        await uploadReviewPhotos(insertedReview.id, selectedPhotos);
       }
 
       form.classList.add("hidden");
