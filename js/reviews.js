@@ -41,10 +41,24 @@ function formatMoney(amount) {
   return `£${Number(amount).toLocaleString("en-GB", { maximumFractionDigits: 0 })}`;
 }
 
-function reviewCardTemplate(review) {
+function reviewCardTemplate(review, photoUrlByPath) {
   const cityName = review.cities?.name ? escapeHtml(review.cities.name) : "";
   const billsText =
     Number(review.bills) === 0 ? "All bills included" : `${formatMoney(review.bills)} / month bills`;
+
+  const photos = (review.review_photos || [])
+    .slice()
+    .sort((a, b) => a.display_order - b.display_order)
+    .map((p) => photoUrlByPath[p.photo_path])
+    .filter(Boolean);
+
+  // No photos on this review: skip the gallery entirely rather than
+  // showing an empty photo area.
+  const photosHtml = photos.length
+    ? `<div class="review-photos">
+        ${photos.map((url) => `<img src="${escapeHtml(url)}" alt="Photo from this review" data-lightbox-photo />`).join("")}
+      </div>`
+    : "";
 
   return `
     <article class="review-card">
@@ -66,6 +80,8 @@ function reviewCardTemplate(review) {
           ${review.student_type ? `<span class="tag">${escapeHtml(review.student_type)}</span>` : ""}
         </div>
       </div>
+
+      ${photosHtml}
 
       <div class="review-card-body">
         <div class="review-detail-grid">
@@ -90,7 +106,7 @@ function reviewCardTemplate(review) {
 function buildQuery() {
   let query = supabase
     .from("reviews")
-    .select("*, cities(name)")
+    .select("*, cities(name), review_photos(id, photo_path, display_order)")
     .eq("status", "approved");
 
   if (filterCity && filterCity.value) {
@@ -141,7 +157,12 @@ async function loadReviews({ reset = false } = {}) {
   if (reset && reviews.length === 0) {
     reviewGrid.innerHTML = `<p class="reviews-empty">No approved reviews yet for this filter — check back soon.</p>`;
   } else {
-    reviewGrid.insertAdjacentHTML("beforeend", reviews.map(reviewCardTemplate).join(""));
+    const photoUrlByPath = await getSignedPhotoUrls(reviews);
+    reviewGrid.insertAdjacentHTML(
+      "beforeend",
+      reviews.map((r) => reviewCardTemplate(r, photoUrlByPath)).join("")
+    );
+    wireLightboxClicks();
   }
 
   offset += reviews.length;
@@ -152,6 +173,53 @@ async function loadReviews({ reset = false } = {}) {
     loadMoreBtn.textContent = "Load more reviews";
     loadMoreBtn.classList.toggle("hidden", reachedEnd);
   }
+}
+
+// Approved-review photos are private-bucket objects, so the only way to
+// display them is a signed URL. One batched request per page of reviews,
+// rather than one request per photo.
+async function getSignedPhotoUrls(reviews) {
+  const paths = reviews.flatMap((r) => (r.review_photos || []).map((p) => p.photo_path));
+  if (paths.length === 0) return {};
+
+  const { data, error } = await supabase.storage.from(REVIEW_PHOTOS_BUCKET).createSignedUrls(paths, 3600);
+  if (error || !data) {
+    console.error("Could not sign review photo URLs:", error?.message);
+    return {};
+  }
+
+  const map = {};
+  data.forEach((entry) => {
+    if (entry.signedUrl) map[entry.path] = entry.signedUrl;
+  });
+  return map;
+}
+
+// ---------- Lightbox (click a review photo to see it larger) ----------
+const lightbox = document.getElementById("lightbox");
+const lightboxImg = document.getElementById("lightboxImg");
+const lightboxClose = document.getElementById("lightboxClose");
+
+function openLightbox(src) {
+  if (!lightbox || !lightboxImg) return;
+  lightboxImg.src = src;
+  lightbox.classList.add("open");
+}
+
+function closeLightbox() {
+  lightbox?.classList.remove("open");
+  if (lightboxImg) lightboxImg.src = "";
+}
+
+lightboxClose?.addEventListener("click", closeLightbox);
+lightbox?.addEventListener("click", (event) => {
+  if (event.target === lightbox) closeLightbox();
+});
+
+function wireLightboxClicks() {
+  reviewGrid?.querySelectorAll("[data-lightbox-photo]").forEach((img) => {
+    img.addEventListener("click", () => openLightbox(img.src));
+  });
 }
 
 filterCity?.addEventListener("change", () => loadReviews({ reset: true }));

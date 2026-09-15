@@ -19,7 +19,7 @@ accommodation through real student experiences and reviews.
 - [x] Admin dashboard
 - [x] City management
 - [x] Review photo uploads
-- [ ] Photo moderation
+- [x] Photo moderation
 - [ ] Seed data + admin test account
 - [ ] Full documentation
 

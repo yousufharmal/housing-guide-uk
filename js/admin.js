@@ -3,7 +3,7 @@
 // Admin dashboard: Supabase Auth login, admin-role check, and moderation
 // for reviews, form questions, cities and site settings.
 
-import { supabase, CITY_IMAGES_BUCKET } from "./supabase.js";
+import { supabase, CITY_IMAGES_BUCKET, REVIEW_PHOTOS_BUCKET } from "./supabase.js";
 
 const loginWrap = document.getElementById("loginWrap");
 const adminShell = document.getElementById("adminShell");
@@ -133,9 +133,13 @@ const LIST_EL_BY_STATUS = {
   deleted: "deletedList",
 };
 
-function adminReviewCardTemplate(review, status) {
+function adminReviewCardTemplate(review, status, photoUrlByPath) {
   const contact = review.review_contacts?.[0];
-  const photoCount = review.review_photos?.length || 0;
+  const photos = (review.review_photos || [])
+    .slice()
+    .sort((a, b) => a.display_order - b.display_order)
+    .map((p) => photoUrlByPath[p.photo_path])
+    .filter(Boolean);
   const cityName = review.cities?.name ? escapeHtml(review.cities.name) : "";
 
   const actions = [];
@@ -146,6 +150,12 @@ function adminReviewCardTemplate(review, status) {
     actions.push(`<button class="btn btn-danger btn-sm" data-action="delete" data-id="${review.id}">Delete</button>`);
   }
 
+  const photosHtml = photos.length
+    ? `<div class="review-photos">
+        ${photos.map((url) => `<img src="${escapeHtml(url)}" alt="Submitted photo" data-lightbox-photo />`).join("")}
+      </div>`
+    : "";
+
   return `
     <article class="admin-review-card">
       <div class="admin-review-card-top">
@@ -154,11 +164,13 @@ function adminReviewCardTemplate(review, status) {
           <div class="admin-review-meta">
             <span class="status-pill ${status}">${status}</span>
             &nbsp;${cityName} &middot; Submitted ${formatDate(review.created_at)}
-            ${photoCount ? `&middot; ${photoCount} photo${photoCount > 1 ? "s" : ""}` : ""}
+            ${photos.length ? `&middot; ${photos.length} photo${photos.length > 1 ? "s" : ""}` : ""}
           </div>
         </div>
         <div class="admin-review-actions">${actions.join("")}</div>
       </div>
+
+      ${photosHtml}
 
       <div class="admin-review-details">
         <div class="review-detail-grid">
@@ -182,6 +194,45 @@ function adminReviewCardTemplate(review, status) {
   `;
 }
 
+// Admins can view photos for reviews of any status (pending, approved,
+// deleted) since is_admin() bypasses the storage RLS check — signing the
+// URL is what actually proves that access, via the admin's session.
+async function getSignedPhotoUrlsAdmin(reviews) {
+  const paths = reviews.flatMap((r) => (r.review_photos || []).map((p) => p.photo_path));
+  if (paths.length === 0) return {};
+
+  const { data, error } = await supabase.storage.from(REVIEW_PHOTOS_BUCKET).createSignedUrls(paths, 3600);
+  if (error || !data) {
+    console.error("Could not sign review photo URLs:", error?.message);
+    return {};
+  }
+
+  const map = {};
+  data.forEach((entry) => {
+    if (entry.signedUrl) map[entry.path] = entry.signedUrl;
+  });
+  return map;
+}
+
+const adminLightbox = document.getElementById("lightbox");
+const adminLightboxImg = document.getElementById("lightboxImg");
+document.getElementById("lightboxClose")?.addEventListener("click", () => {
+  adminLightbox?.classList.remove("open");
+});
+adminLightbox?.addEventListener("click", (event) => {
+  if (event.target === adminLightbox) adminLightbox.classList.remove("open");
+});
+
+function wireAdminLightboxClicks(listEl) {
+  listEl.querySelectorAll("[data-lightbox-photo]").forEach((img) => {
+    img.addEventListener("click", () => {
+      if (!adminLightbox || !adminLightboxImg) return;
+      adminLightboxImg.src = img.src;
+      adminLightbox.classList.add("open");
+    });
+  });
+}
+
 async function loadReviewsByStatus(status) {
   const listEl = document.getElementById(LIST_EL_BY_STATUS[status]);
   if (!listEl) return;
@@ -190,7 +241,7 @@ async function loadReviewsByStatus(status) {
   try {
     ({ data, error } = await supabase
       .from("reviews")
-      .select("*, cities(name), review_contacts(name, email), review_photos(id)")
+      .select("*, cities(name), review_contacts(name, email), review_photos(id, photo_path, display_order)")
       .eq("status", status)
       .order("created_at", { ascending: false }));
   } catch (networkErr) {
@@ -205,7 +256,9 @@ async function loadReviewsByStatus(status) {
   if (!data || data.length === 0) {
     listEl.innerHTML = `<p class="admin-empty-state">Nothing here yet.</p>`;
   } else {
-    listEl.innerHTML = data.map((r) => adminReviewCardTemplate(r, status)).join("");
+    const photoUrlByPath = await getSignedPhotoUrlsAdmin(data);
+    listEl.innerHTML = data.map((r) => adminReviewCardTemplate(r, status, photoUrlByPath)).join("");
+    wireAdminLightboxClicks(listEl);
   }
 
   if (status === "pending") {
