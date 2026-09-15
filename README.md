@@ -13,7 +13,7 @@ accommodation through real student experiences and reviews.
 ## Status
 
 - [x] Project scaffolding
-- [ ] Database schema
+- [x] Database schema
 - [ ] Public website
 - [ ] Review submission form
 - [ ] Admin dashboard
