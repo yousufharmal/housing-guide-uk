@@ -147,6 +147,29 @@
       <div class="admin-panel-header">
         <h2>Cities</h2>
       </div>
+
+      <div class="admin-card" style="margin-bottom:24px;">
+        <h3 style="margin-bottom:16px;">Add a city</h3>
+        <form id="cityAddForm">
+          <div class="admin-form-grid">
+            <div class="form-field" style="margin-bottom:0;">
+              <label for="city_new_name">City name</label>
+              <input type="text" id="city_new_name" required placeholder="e.g. Sheffield" />
+            </div>
+            <div class="form-field" style="margin-bottom:0;">
+              <label for="city_new_order">Display order</label>
+              <input type="number" id="city_new_order" value="0" />
+            </div>
+            <label class="pill-toggle"><input type="checkbox" id="city_new_enabled" style="width:auto;" checked /> Enabled</label>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm">Add city</button>
+        </form>
+        <p style="font-size:0.8rem;color:var(--color-text-muted);margin:12px 0 0;">
+          After adding a city, upload its own photo from the table below — every city keeps an
+          independent image, there is no shared fallback.
+        </p>
+      </div>
+
       <div style="overflow-x:auto;">
         <table class="admin-table" id="citiesTable">
           <thead>
@@ -155,6 +178,7 @@
               <th>Name</th>
               <th>Enabled</th>
               <th>Order</th>
+              <th></th>
             </tr>
           </thead>
           <tbody id="citiesTableBody"></tbody>

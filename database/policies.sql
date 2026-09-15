@@ -233,3 +233,41 @@ create policy "Anyone can upload photos to a pending review"
 create policy "Admins can delete review photo files"
   on storage.objects for delete
   using (bucket_id = 'review-photos' and public.is_admin());
+
+-- =============================================================================
+-- Storage: city-images bucket
+-- =============================================================================
+-- Unlike review photos, city images have no privacy requirement — every
+-- enabled city is already publicly listed, so this bucket is public and
+-- served through the normal public URL (no signed URLs needed). Only
+-- admins can add, replace or remove files.
+-- =============================================================================
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'city-images',
+  'city-images',
+  true,
+  5242880, -- 5 MB per file
+  array['image/jpeg', 'image/png', 'image/webp']
+)
+on conflict (id) do update
+set public = true,
+    file_size_limit = 5242880,
+    allowed_mime_types = array['image/jpeg', 'image/png', 'image/webp'];
+
+create policy "Anyone can view city images"
+  on storage.objects for select
+  using (bucket_id = 'city-images');
+
+create policy "Admins can upload city images"
+  on storage.objects for insert
+  with check (bucket_id = 'city-images' and public.is_admin());
+
+create policy "Admins can replace city images"
+  on storage.objects for update
+  using (bucket_id = 'city-images' and public.is_admin())
+  with check (bucket_id = 'city-images' and public.is_admin());
+
+create policy "Admins can delete city images"
+  on storage.objects for delete
+  using (bucket_id = 'city-images' and public.is_admin());

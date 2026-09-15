@@ -32,6 +32,9 @@ export const supabase = createClient(
 // Name of the Supabase Storage bucket that holds review photos.
 export const REVIEW_PHOTOS_BUCKET = "review-photos";
 
+// Name of the Supabase Storage bucket that holds city images (public bucket).
+export const CITY_IMAGES_BUCKET = "city-images";
+
 // True once js/config.js has real project values in it.
 export function isSupabaseConfigured() {
   return !isPlaceholder;

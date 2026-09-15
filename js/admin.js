@@ -1,11 +1,9 @@
 // js/admin.js
 //
 // Admin dashboard: Supabase Auth login, admin-role check, and moderation
-// for reviews, form questions and site settings. City management here is
-// a basic read-only listing for now — full city CRUD (add/edit/image/
-// enable/reorder) is completed in a later commit.
+// for reviews, form questions, cities and site settings.
 
-import { supabase } from "./supabase.js";
+import { supabase, CITY_IMAGES_BUCKET } from "./supabase.js";
 
 const loginWrap = document.getElementById("loginWrap");
 const adminShell = document.getElementById("adminShell");
@@ -334,8 +332,35 @@ document.getElementById("formFieldForm")?.addEventListener("submit", async (even
 });
 
 /* =============================================================================
-   City Management (basic read-only listing — full CRUD added in a later commit)
+   City Management
+   Every city row keeps its own image_url — there is no shared/global
+   fallback image anywhere in this code path.
    ============================================================================= */
+
+function cityRowTemplate(city) {
+  const thumb = city.image_url
+    ? `<img src="${escapeHtml(city.image_url)}" alt="${escapeHtml(city.name)}" style="width:56px;height:42px;object-fit:cover;border-radius:6px;" />`
+    : `<div style="width:56px;height:42px;border-radius:6px;background:var(--color-bg-alt);"></div>`;
+
+  return `
+    <tr data-id="${city.id}">
+      <td>
+        ${thumb}
+        <div style="margin-top:6px;">
+          <button type="button" class="btn btn-sm btn-outline" data-upload-image>Upload image</button>
+          <input type="file" accept="image/jpeg,image/png,image/webp" data-image-input hidden />
+        </div>
+      </td>
+      <td><input type="text" data-field="name" value="${escapeHtml(city.name)}" style="min-width:140px;" /></td>
+      <td><input type="checkbox" data-field="enabled" ${city.enabled ? "checked" : ""} /></td>
+      <td><input type="number" data-field="display_order" value="${city.display_order}" style="width:70px;" /></td>
+      <td class="row-actions">
+        <button type="button" class="btn btn-sm btn-primary" data-save-city>Save</button>
+        <button type="button" class="btn btn-sm btn-danger" data-delete-city>Delete</button>
+      </td>
+    </tr>
+  `;
+}
 
 async function loadCitiesAdmin() {
   const tbody = document.getElementById("citiesTableBody");
@@ -347,28 +372,133 @@ async function loadCitiesAdmin() {
   }
 
   if (error) {
-    tbody.innerHTML = `<tr><td colspan="4">Couldn't load cities: ${escapeHtml(error.message)}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5">Couldn't load cities: ${escapeHtml(error.message)}</td></tr>`;
     return;
   }
 
   if (!data || data.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="4">No cities yet.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5">No cities yet.</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = data
-    .map(
-      (city) => `
-      <tr>
-        <td>${city.image_url ? `<img src="${escapeHtml(city.image_url)}" alt="${escapeHtml(city.name)}" style="width:56px;height:42px;object-fit:cover;border-radius:6px;" />` : "—"}</td>
-        <td>${escapeHtml(city.name)}</td>
-        <td>${city.enabled ? "Yes" : "No"}</td>
-        <td>${city.display_order}</td>
-      </tr>
-    `
-    )
-    .join("");
+  tbody.innerHTML = data.map(cityRowTemplate).join("");
+  wireCityRowHandlers();
 }
+
+function wireCityRowHandlers() {
+  const tbody = document.getElementById("citiesTableBody");
+
+  tbody.querySelectorAll("[data-upload-image]").forEach((btn) => {
+    const row = btn.closest("tr");
+    const fileInput = row.querySelector("[data-image-input]");
+    btn.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", () => uploadCityImage(row, fileInput.files[0]));
+  });
+
+  tbody.querySelectorAll("[data-save-city]").forEach((btn) => {
+    btn.addEventListener("click", () => saveCityRow(btn.closest("tr")));
+  });
+
+  tbody.querySelectorAll("[data-delete-city]").forEach((btn) => {
+    btn.addEventListener("click", () => deleteCityRow(btn.closest("tr")));
+  });
+}
+
+async function uploadCityImage(row, file) {
+  if (!file) return;
+  const id = row.getAttribute("data-id");
+  const uploadBtn = row.querySelector("[data-upload-image]");
+  uploadBtn.disabled = true;
+  uploadBtn.textContent = "Uploading…";
+
+  try {
+    const extension = file.name.split(".").pop();
+    const path = `${id}/${Date.now()}.${extension}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from(CITY_IMAGES_BUCKET)
+      .upload(path, file, { upsert: true, contentType: file.type });
+
+    if (uploadError) throw uploadError;
+
+    const { data: publicUrlData } = supabase.storage.from(CITY_IMAGES_BUCKET).getPublicUrl(path);
+
+    const { error: updateError } = await supabase
+      .from("cities")
+      .update({ image_url: publicUrlData.publicUrl })
+      .eq("id", id);
+
+    if (updateError) throw updateError;
+
+    loadCitiesAdmin();
+  } catch (err) {
+    alert(`Couldn't upload image: ${err.message}`);
+    uploadBtn.disabled = false;
+    uploadBtn.textContent = "Upload image";
+  }
+}
+
+async function saveCityRow(row) {
+  const id = row.getAttribute("data-id");
+  const saveBtn = row.querySelector("[data-save-city]");
+  saveBtn.disabled = true;
+
+  const payload = {
+    name: row.querySelector('[data-field="name"]').value.trim(),
+    enabled: row.querySelector('[data-field="enabled"]').checked,
+    display_order: Number(row.querySelector('[data-field="display_order"]').value) || 0,
+  };
+
+  const { error } = await supabase.from("cities").update(payload).eq("id", id);
+
+  saveBtn.disabled = false;
+  if (error) {
+    alert(`Couldn't save city: ${error.message}`);
+  } else {
+    loadCitiesAdmin();
+  }
+}
+
+async function deleteCityRow(row) {
+  const id = row.getAttribute("data-id");
+  const name = row.querySelector('[data-field="name"]').value;
+
+  if (!confirm(`Delete "${name}"? This can't be undone.`)) return;
+
+  const { error } = await supabase.from("cities").delete().eq("id", id);
+
+  if (error) {
+    // Most likely blocked by the foreign key on reviews.city_id (ON DELETE RESTRICT) —
+    // i.e. this city still has reviews attached, so deleting isn't safe.
+    alert(
+      `Couldn't delete "${name}". It most likely still has reviews attached — disable it instead of deleting it.`
+    );
+    return;
+  }
+
+  loadCitiesAdmin();
+}
+
+document.getElementById("cityAddForm")?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const payload = {
+    name: document.getElementById("city_new_name").value.trim(),
+    enabled: document.getElementById("city_new_enabled").checked,
+    display_order: Number(document.getElementById("city_new_order").value) || 0,
+  };
+
+  const { error } = await supabase.from("cities").insert(payload);
+
+  if (error) {
+    alert(`Couldn't add city: ${error.message}`);
+    return;
+  }
+
+  event.target.reset();
+  document.getElementById("city_new_enabled").checked = true;
+  loadCitiesAdmin();
+});
 
 /* =============================================================================
    Website Management

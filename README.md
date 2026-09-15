@@ -17,7 +17,7 @@ accommodation through real student experiences and reviews.
 - [x] Public website (cities + review browsing)
 - [x] Review submission form
 - [x] Admin dashboard
-- [ ] City management
+- [x] City management
 - [ ] Review photo uploads
 - [ ] Photo moderation
 - [ ] Seed data + admin test account
